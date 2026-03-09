@@ -1,6 +1,6 @@
 import pandas as pd
 
-from evaluation import Visualizer
+from visualization import Visualizer
 
 
 def test_color_mapping_handles_nan():
@@ -24,7 +24,7 @@ def test_test_plot_circle_marker(tmp_path):
     from function_searcher import SelectionResult
     selections = {f'y{i}': SelectionResult(ideal_index=i, sum_sq=0, max_dev=0)
                   for i in range(1,5)}
-    from evaluation import Visualizer
+    from visualization import Visualizer
     mapping = pd.DataFrame({'x':[0], 'y_test':[0], 'delta_y':[0], 'ideal_func':[1]})
     fig = Visualizer.plot_test_mappings(training, mapping, ideal, selections,
                                        output_html=str(tmp_path / "out2.html"))
@@ -43,7 +43,7 @@ def test_plot_training_color_consistency(tmp_path):
     selections = {f'y{i}': SelectionResult(ideal_index=i, sum_sq=0, max_dev=0)
                   for i in range(1,5)}
     # call plot_training and inspect returned figure
-    from evaluation import Visualizer
+    from visualization import Visualizer
     fig = Visualizer.plot_training(training, ideal, selections,
                                    output_html=str(tmp_path / "out.html"))
     # find line renderers and check their colors

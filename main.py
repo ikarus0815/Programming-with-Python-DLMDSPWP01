@@ -6,7 +6,8 @@ import sys
 from loader import TrainingLoader, IdealLoader, TestLoader, LoaderError
 from database_manager import DatabaseManager, DatabaseError
 from function_searcher import FunctionSearcher, SelectionError
-from evaluation import Evaluator, Visualizer, EvaluationError
+from mapping_test import Mapping, MappingError
+from visualization import Visualizer
 
 
 def main() -> None:
@@ -34,7 +35,7 @@ def main() -> None:
         searcher = FunctionSearcher()
         selections = searcher.select_ideal_functions(training_df, ideal_df)
 
-        evaluator = Evaluator(ideal_df, selections)
+        evaluator = Mapping(ideal_df, selections)
         mapping_df = evaluator.map_test_points(test_df)
         evaluator.save_mapping(mapping_df, db)
 
@@ -55,8 +56,8 @@ def main() -> None:
     except SelectionError as err:
         print(f"Selection error: {err}", file=sys.stderr)
         sys.exit(1)
-    except EvaluationError as err:
-        print(f"Evaluation error: {err}", file=sys.stderr)
+    except MappingError as err:
+        print(f"Mapping error: {err}", file=sys.stderr)
         sys.exit(1)
     except Exception as err:
         import traceback

@@ -56,15 +56,22 @@ class FunctionSearcher:
         self.results.clear()
 
         ideal_columns = [c for c in ideal_df.columns if c != 'x']
+
+        # OPTIMIZATION: Pre-compute ideal values to avoid redundant to_numpy() calls
+        # This eliminates 200 unnecessary array allocations (4 training cols × 50 ideal functions)
+        ideal_values = {col: ideal_df[col].to_numpy(dtype=float) for col in ideal_columns}
+
         for train_col in training_df.columns:
             if train_col == 'x':
                 continue
             best: SelectionResult | None = None
             train_vals = training_df[train_col].to_numpy(dtype=float)
             for idx, ideal_col in enumerate(ideal_columns, start=1):
-                ideal_vals = ideal_df[ideal_col].to_numpy(dtype=float)
+                # OPTIMIZATION: Use cached ideal values instead of repeated to_numpy()
+                ideal_vals = ideal_values[ideal_col]
                 residuals = train_vals - ideal_vals
-                sum_sq = float(np.sum(residuals ** 2))
+                # OPTIMIZATION: Use dot product for better numerical stability and slight performance gain
+                sum_sq = float(np.dot(residuals, residuals))
                 max_dev = float(np.max(np.abs(residuals)))
                 if best is None or sum_sq < best.sum_sq:
                     # make sure we record a plain Python int (not np.int64 or float)

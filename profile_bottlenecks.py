@@ -12,6 +12,9 @@ from loader import TrainingLoader, IdealLoader, TestLoader
 from function_searcher import FunctionSearcher
 from mapping_test import Mapping
 
+# Configuration: Set to False to skip warm-up cycles
+USE_WARMUP = True
+
 
 def profile_function_selection(iterations: int = 5):
     """Profile FunctionSearcher.select_ideal_functions()"""
@@ -22,6 +25,13 @@ def profile_function_selection(iterations: int = 5):
     print("\n" + "="*80)
     print("PROFILING: function_searcher.select_ideal_functions()")
     print("="*80 + "\n")
+
+    # Warm-up cycle to exclude compilation time
+    if USE_WARMUP:
+        print("Running warm-up cycle...")
+        searcher = FunctionSearcher()
+        searcher.select_ideal_functions(training_df, ideal_df)
+        print("Warm-up complete. Starting actual profiling...\n")
 
     pr = cProfile.Profile()
     pr.enable()
@@ -59,6 +69,13 @@ def profile_test_mapping(iterations: int = 5):
     print("\n" + "="*80)
     print("PROFILING: Mapping.map_test_points()")
     print("="*80 + "\n")
+
+    # Warm-up cycle to exclude compilation time
+    if USE_WARMUP:
+        print("Running warm-up cycle...")
+        evaluator = Mapping(ideal_df, selections)
+        evaluator.map_test_points(test_df)
+        print("Warm-up complete. Starting actual profiling...\n")
 
     pr = cProfile.Profile()
     pr.enable()

@@ -13,7 +13,22 @@ from function_searcher import FunctionSearcher
 from mapping_test import Mapping
 
 # Configuration: Set to False to skip warm-up cycles
-USE_WARMUP = True
+USE_WARMUP = False
+
+
+def print_stats_with_precision(ps, limit=20, decimals=6):
+    """Print pstats with custom decimal precision."""
+    print(f"{'ncalls':<10} {'tottime':<12} {'percall':<12} {'cumtime':<12} {'percall':<12} {'filename:lineno(function)':<50}")
+    print("-" * 120)
+    
+    for func, stats in sorted(ps.stats.items(), key=lambda x: x[1][3], reverse=True)[:limit]:
+        ncalls = stats[0]
+        tottime = stats[2]
+        cumtime = stats[3]
+        percall_tot = tottime / ncalls if ncalls > 0 else 0
+        percall_cum = cumtime / ncalls if ncalls > 0 else 0
+        
+        print(f"{ncalls:<10} {tottime:<12.{decimals}f} {percall_tot:<12.{decimals}f} {cumtime:<12.{decimals}f} {percall_cum:<12.{decimals}f} {str(func):<50}")
 
 
 def profile_function_selection(iterations: int = 5):
@@ -45,14 +60,14 @@ def profile_function_selection(iterations: int = 5):
     # Print top 20 functions by cumulative time
     ps = pstats.Stats(pr)
     ps.sort_stats('cumulative')
-    ps.print_stats(20)
+    print_stats_with_precision(ps, limit=20, decimals=4)
 
     # Also show by total time
     print("\n" + "="*80)
     print("Top functions by TOTAL TIME (not cumulative):")
     print("="*80 + "\n")
     ps.sort_stats('time')
-    ps.print_stats(15)
+    print_stats_with_precision(ps, limit=15, decimals=4)
 
 
 def profile_test_mapping(iterations: int = 5):
@@ -89,14 +104,14 @@ def profile_test_mapping(iterations: int = 5):
     # Print top 25 functions by cumulative time
     ps = pstats.Stats(pr)
     ps.sort_stats('cumulative')
-    ps.print_stats(25)
+    print_stats_with_precision(ps, limit=25, decimals=4)
 
     # Also show by total time
     print("\n" + "="*80)
     print("Top functions by TOTAL TIME (not cumulative):")
     print("="*80 + "\n")
     ps.sort_stats('time')
-    ps.print_stats(20)
+    print_stats_with_precision(ps, limit=20, decimals=4)
 
 
 if __name__ == "__main__":

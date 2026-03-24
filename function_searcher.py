@@ -25,7 +25,6 @@ class FunctionSearcher:
     """Finds the optimal ideal functions for each training series."""
 
     def __init__(self) -> None:
-        # mapping from training column name -> SelectionResult
         self.results: dict[str, SelectionResult] = {}
 
     def select_ideal_functions(
@@ -50,7 +49,6 @@ class FunctionSearcher:
         SelectionError
             If the x-values do not match between dataframes.
         """
-        # ensure x-values align exactly
         if not training_df['x'].equals(ideal_df['x']):
             raise SelectionError('x-values in training and ideal dataframes do not match')
 
@@ -60,7 +58,6 @@ class FunctionSearcher:
 
         # OPTIMIZATION: Pre-compute ideal values to avoid redundant to_numpy() calls
         # Extract ALL ideal column data at once (200 calls reduced to 50)
-        # This eliminates 200 unnecessary array allocations (4 training cols × 50 ideal functions)
         ideal_values = {}
         for ideal_col in ideal_columns:
             # Use .values for faster extraction than .to_numpy()
@@ -76,14 +73,12 @@ class FunctionSearcher:
                           for col in training_columns}
 
         for train_col in training_columns:
-            # Use pre-computed training values
             train_vals = training_values[train_col]
             
             # OPTIMIZATION: Use NUMBA JIT-compiled exhaustive search
-            # Searches all 50 ideal functions in compiled native code (2-10x faster)
+            # Searches all 50 ideal functions in compiled native code
             best_idx, sum_sq, max_dev = find_best_ideal_by_column(train_vals, ideal_values_stacked)
             
-            # Convert numpy types to Python native types
             best = SelectionResult(
                 ideal_index=int(best_idx),
                 sum_sq=float(sum_sq),

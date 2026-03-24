@@ -13,7 +13,6 @@ try:
     NUMBA_AVAILABLE = True
 except ImportError:
     NUMBA_AVAILABLE = False
-    # Dummy decorator for fallback
     def jit(*args, **kwargs):
         def decorator(func):
             return func
@@ -103,7 +102,7 @@ def find_best_ideal_by_column(train_vals: np.ndarray, ideal_values_stacked: np.n
         if sum_sq < best_sum_sq:
             best_sum_sq = sum_sq
             best_max_dev = np.max(np.abs(residuals))
-            best_idx = idx + 1  # 1-indexed for ideal function numbering
+            best_idx = idx + 1  
     
     return best_idx, best_sum_sq, best_max_dev
 
@@ -220,12 +219,10 @@ def batch_find_best_mapping(y_test: np.ndarray, thresholds: np.ndarray,
     deltas = np.empty(num_test_points, dtype=np.float64)
     col_indices = np.empty(num_test_points, dtype=np.int64)
     
-    # ← This entire loop stays in NUMBA (not Python!)
     for i in range(num_test_points):
         y_val = y_test[i]
         idx = x_indices[i]
         
-        # Skip if x-value not found in ideal data
         if idx < 0:
             deltas[i] = np.nan
             col_indices[i] = -1
@@ -234,7 +231,6 @@ def batch_find_best_mapping(y_test: np.ndarray, thresholds: np.ndarray,
         best_delta = np.inf
         best_col_idx = -1
         
-        # Search through all 4 training columns (stays compiled)
         for col_idx in range(ideal_values_stacked.shape[0]):
             ideal_vals = ideal_values_stacked[col_idx]
             threshold = thresholds[col_idx]
@@ -270,7 +266,6 @@ if __name__ == "__main__":
     print("NUMBA KERNEL VERIFICATION")
     print("="*60)
     
-    # Create sample data matching actual dataset
     train = np.random.randn(400).astype(np.float64)
     ideal = np.random.randn(400).astype(np.float64)
     

@@ -13,14 +13,12 @@ from mapping_test import Mapping, MappingError
 from visualization import Visualizer
 
 def main() -> None:
-    # hard-coded paths – adjust as needed
     training_path = "data/train.csv"
     ideal_path = "data/ideal.csv"
     test_path = "data/test.csv"
     output_db = "results.db"
 
     try:
-        # Phase 1: Data Loading
         t_loader = TrainingLoader()
         training_df = t_loader.load(training_path)
 
@@ -30,26 +28,20 @@ def main() -> None:
         test_loader = TestLoader()
         test_df = test_loader.load(test_path)
 
-        # Phase 2: Database Initialization
         db = DatabaseManager(output_db)
         db.create_tables()
 
-        # Phase 3: Data Persistence
         db.load_training(training_df)
         db.load_ideal(ideal_df)
 
-        # Phase 4: Function Selection (CPU-intensive)
         searcher = FunctionSearcher()
         selections = searcher.select_ideal_functions(training_df, ideal_df)
 
-        # Phase 5: Test Point Mapping (CPU-intensive)
         evaluator = Mapping(ideal_df, selections)
         mapping_df = evaluator.map_test_points(test_df)
 
-        # Phase 6: Result Storage
         evaluator.save_mapping(mapping_df, db)
 
-        # Phase 7: Visualization
         Visualizer.plot_training(training_df, ideal_df, selections)
         Visualizer.plot_test_mappings(test_df, mapping_df, ideal_df, selections)
 

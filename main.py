@@ -1,16 +1,10 @@
 """Simple runner for the function-fitting program using fixed paths.
 
-Supports two modes:
-1. NORMAL MODE: Full pipeline with database and visualization
-2. BENCHMARK MODE: Isolated algorithm performance measurement (25 iterations)
-
 Usage:
-    python main.py              # Normal mode with full pipeline
-    python main.py --benchmark  # Benchmark mode (25 iterations, no I/O overhead)
+    python main.py  # Run the full pipeline
 """
 
 import sys
-import argparse
 
 from loader import TrainingLoader, IdealLoader, TestLoader, LoaderError
 from database_manager import DatabaseManager, DatabaseError
@@ -19,34 +13,13 @@ from mapping_test import Mapping, MappingError
 from visualization import Visualizer
 from performance_tracker import PerformanceTracker
 
-def main(benchmark_mode: bool = False, benchmark_iterations: int = 25) -> None:
+def main() -> None:
     # hard-coded paths – adjust as needed
     training_path = "data/train.csv"
     ideal_path = "data/ideal.csv"
     test_path = "data/test.csv"
     output_db = "results.db"
 
-    # BENCHMARK MODE: Measure core algorithms only (no I/O overhead)
-    if benchmark_mode:
-        print("\n" + "="*80)
-        print("🔬 BENCHMARK MODE: Core Algorithm Performance")
-        print("="*80)
-        print(f"\nMeasuring {benchmark_iterations} iterations per algorithm...")
-        print("(I/O operations excluded for clean measurements)\n")
-
-        try:
-            from benchmark_mode import BenchmarkRunner
-            runner = BenchmarkRunner(training_path, ideal_path, test_path)
-            results = runner.run_full_benchmark(iterations=benchmark_iterations, warmup=1)
-            runner.export_results(results)
-        except Exception as err:
-            import traceback
-            print("Benchmark error:", file=sys.stderr)
-            traceback.print_exc()
-            sys.exit(1)
-        return
-
-    # NORMAL MODE: Full pipeline with database persistence and visualization
     # Initialize performance tracker
     tracker = PerformanceTracker()
 
@@ -131,20 +104,4 @@ def main(benchmark_mode: bool = False, benchmark_iterations: int = 25) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Data analysis pipeline with optional benchmark mode"
-    )
-    parser.add_argument(
-        "--benchmark",
-        action="store_true",
-        help="Run benchmark mode (25 iterations, no I/O overhead)"
-    )
-    parser.add_argument(
-        "--iterations",
-        type=int,
-        default=25,
-        help="Number of benchmark iterations (default: 25)"
-    )
-
-    args = parser.parse_args()
-    main(benchmark_mode=args.benchmark, benchmark_iterations=args.iterations)
+    main()

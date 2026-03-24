@@ -35,18 +35,15 @@ class Mapping:
             ``ideal_func`` (the index of the chosen ideal function or ``None``).
         """
         results: list[dict] = []
-        # build quick lookup of ideal values by column name
         ideal_lookup = {col: self.ideal_df[col].to_numpy(dtype=float) for col in self.ideal_df.columns if col != 'x'}
         x_values = self.ideal_df['x'].to_numpy(dtype=float)
 
         for _, row in test_df.iterrows():
             x_val = float(row['x'])
             y_val = float(row['y'])
-            # find matching index in x_values
             try:
                 idx = int((x_values == x_val).argmax())
             except Exception:
-                # x not found; skip or raise
                 continue
 
             best_fit = None
@@ -55,7 +52,6 @@ class Mapping:
 
             for train_col, sel in self.selection_results.items():
                 threshold = sel.max_dev * 2**0.5
-                # sel.ideal_index should be an integer, but cast defensively
                 col_idx = int(sel.ideal_index)
                 ideal_vals = self.ideal_df.iloc[:, col_idx].to_numpy(dtype=float)
                 delta = abs(y_val - ideal_vals[idx])

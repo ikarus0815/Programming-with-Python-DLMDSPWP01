@@ -14,14 +14,12 @@ from pathlib import Path
 
 from sqlalchemy import Column, Float, Integer, create_engine
 from sqlalchemy.exc import SQLAlchemyError
-# SQLAlchemy 2.0 prefers declarative_base from orm
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 import pandas as pd
 
 
-# create the declarative base for ORM models
 Base = declarative_base()
 
 
@@ -45,7 +43,6 @@ class IdealRow(Base):
 
     id = Column(Integer, primary_key=True)
     x = Column(Float, nullable=False, index=True)
-    # y columns will be dynamically added when table is created
 
 
 class TestMapping(Base):

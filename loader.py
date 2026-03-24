@@ -58,7 +58,6 @@ class BaseLoader(abc.ABC):
         """
         if df.shape[1] < 2:
             raise LoaderError("DataFrame must have at least two columns")
-        # check for numeric dtype
         if not all(pd.api.types.is_numeric_dtype(dt) for dt in df.dtypes):
             raise LoaderError("All columns must be numeric")
 
@@ -76,7 +75,6 @@ class TrainingLoader(BaseLoader):
             raise LoaderError(f"Failed to read training CSV: {exc}") from exc
 
         self._validate_dataframe(df)
-        # expecting exactly 5 columns: x, y1..y4
         if df.shape[1] != 5:
             raise LoaderError("Training CSV must have exactly 5 columns: x,y1..y4")
         return df

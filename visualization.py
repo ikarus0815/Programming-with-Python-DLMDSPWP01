@@ -23,18 +23,14 @@ class Visualizer:
         """
         p = figure(title="Training vs Ideal",
                    x_axis_label="x", y_axis_label="y")
-        # choose a palette that can accommodate up to four functions
         colors = ['red', 'green', 'blue', 'orange', 'purple']
-        # map training columns to colors (skip 'x')
         train_cols = [c for c in training_df.columns if c != 'x']
         col_color = {col: colors[i % len(colors)] for i, col in enumerate(train_cols)}
 
-        # plot training curves
         for col in train_cols:
             p.line(training_df['x'], training_df[col],
                    legend_label=f"train_{col}", line_color=col_color[col])
 
-        # plot selected ideal curves using same color but dashed
         for train_col, sel in selections.items():
             col_idx = int(sel.ideal_index)
             ideal_col = ideal_df.columns[col_idx]
@@ -66,16 +62,13 @@ class Visualizer:
         corresponds to which ideal index.
         """
         p = figure(title="Test Mappings", x_axis_label="x", y_axis_label="y")
-        # color palette reused from training plot
         colors = ['red', 'green', 'blue', 'orange', 'purple']
 
-        # derive a consistent color for each selected ideal index
         ideal_indices = [int(sel.ideal_index) for sel in selections.values()]
         color_map: dict[int, str] = {}
         for idx, ideal_index in enumerate(ideal_indices):
             color_map[ideal_index] = colors[idx % len(colors)]
 
-        # plot ideal functions (only those chosen)
         for train_col, sel in selections.items():
             ideal_index = int(sel.ideal_index)
             ideal_col = ideal_df.columns[ideal_index]
@@ -84,7 +77,6 @@ class Visualizer:
                    line_color=color, line_dash='dashed',
                    legend_label=f"ideal_{ideal_col}")
 
-        # plot test points coloured by ideal index assignment
         map_df = mapping_df.copy()
         def pick_color(i):
             if i is None or (isinstance(i, float) and pd.isna(i)):
@@ -92,7 +84,6 @@ class Visualizer:
             return color_map.get(int(i), 'black')
         map_df['color'] = map_df['ideal_func'].map(pick_color)
         src = ColumnDataSource(map_df)
-        # draw points as circles; scatter with marker ensures future compatibility
         p.scatter('x', 'y_test', color='color', size=6, marker='circle', source=src)
 
         hover = HoverTool(tooltips=[("x", "@x"), ("y", "@y_test"), ("ideal", "@ideal_func")])

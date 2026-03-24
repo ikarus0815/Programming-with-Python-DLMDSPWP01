@@ -31,8 +31,7 @@ def print_stats_with_precision(ps, limit=20, decimals=6):
 
 
 def profile_function_selection(iterations: int = 5):
-    """Profile FunctionSearcher.select_ideal_functions()"""
-    # Load data once
+
     training_df = TrainingLoader().load("data/train.csv")
     ideal_df = IdealLoader().load("data/ideal.csv")
 
@@ -40,9 +39,8 @@ def profile_function_selection(iterations: int = 5):
     print("PROFILING: function_searcher.select_ideal_functions()")
     print("="*80 + "\n")
 
-    # Warm-up cycle to exclude compilation time
+
     if USE_WARMUP:
-        print("Running warm-up cycle...")
         searcher = FunctionSearcher()
         searcher.select_ideal_functions(training_df, ideal_df)
         print("Warm-up complete. Starting actual profiling...\n")
@@ -56,20 +54,16 @@ def profile_function_selection(iterations: int = 5):
 
     pr.disable()
 
-    # Print top 20 functions by cumulative time
     ps = pstats.Stats(pr)
     ps.sort_stats('cumulative')
     print_stats_with_precision(ps, limit=20, decimals=4)
 
 
 def profile_test_mapping(iterations: int = 5):
-    """Profile Mapping.map_test_points()"""
-    # Load data once
     training_df = TrainingLoader().load("data/train.csv")
     ideal_df = IdealLoader().load("data/ideal.csv")
     test_df = TestLoader().load("data/test.csv")
 
-    # Pre-compute selections (not part of profile)
     searcher = FunctionSearcher()
     selections = searcher.select_ideal_functions(training_df, ideal_df)
 
@@ -77,7 +71,6 @@ def profile_test_mapping(iterations: int = 5):
     print("PROFILING: Mapping.map_test_points()")
     print("="*80 + "\n")
 
-    # Warm-up cycle to exclude compilation time
     if USE_WARMUP:
         print("Running warm-up cycle...")
         evaluator = Mapping(ideal_df, selections)
@@ -93,7 +86,6 @@ def profile_test_mapping(iterations: int = 5):
 
     pr.disable()
 
-    # Print top 25 functions by cumulative time
     ps = pstats.Stats(pr)
     ps.sort_stats('cumulative')
     print_stats_with_precision(ps, limit=25, decimals=4)

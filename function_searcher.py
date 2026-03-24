@@ -24,7 +24,6 @@ class FunctionSearcher:
     """Finds the optimal ideal functions for each training series."""
 
     def __init__(self) -> None:
-        # mapping from training column name -> SelectionResult
         self.results: dict[str, SelectionResult] = {}
 
     def select_ideal_functions(
@@ -49,7 +48,7 @@ class FunctionSearcher:
         SelectionError
             If the x-values do not match between dataframes.
         """
-        # ensure x-values align exactly
+
         if not training_df['x'].equals(ideal_df['x']):
             raise SelectionError('x-values in training and ideal dataframes do not match')
 
@@ -67,7 +66,6 @@ class FunctionSearcher:
                 sum_sq = float(np.sum(residuals ** 2))
                 max_dev = float(np.max(np.abs(residuals)))
                 if best is None or sum_sq < best.sum_sq:
-                    # make sure we record a plain Python int (not np.int64 or float)
                     best = SelectionResult(ideal_index=int(idx), sum_sq=sum_sq, max_dev=max_dev)
             assert best is not None
             self.results[train_col] = best

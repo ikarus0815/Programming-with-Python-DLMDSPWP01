@@ -3,3 +3,5 @@ numpy
 sqlalchemy
 bokeh
 pytest
+psutil
+numba

@@ -12,8 +12,7 @@ from loader import TrainingLoader, IdealLoader, TestLoader
 from function_searcher import FunctionSearcher
 from mapping_test import Mapping
 
-# Configuration: Set to False to skip warm-up cycles
-USE_WARMUP = False
+USE_WARMUP = True
 
 
 def print_stats_with_precision(ps, limit=20, decimals=6):
@@ -62,13 +61,6 @@ def profile_function_selection(iterations: int = 5):
     ps.sort_stats('cumulative')
     print_stats_with_precision(ps, limit=20, decimals=4)
 
-    # Also show by total time
-    print("\n" + "="*80)
-    print("Top functions by TOTAL TIME (not cumulative):")
-    print("="*80 + "\n")
-    ps.sort_stats('time')
-    print_stats_with_precision(ps, limit=15, decimals=4)
-
 
 def profile_test_mapping(iterations: int = 5):
     """Profile Mapping.map_test_points()"""
@@ -106,17 +98,9 @@ def profile_test_mapping(iterations: int = 5):
     ps.sort_stats('cumulative')
     print_stats_with_precision(ps, limit=25, decimals=4)
 
-    # Also show by total time
-    print("\n" + "="*80)
-    print("Top functions by TOTAL TIME (not cumulative):")
-    print("="*80 + "\n")
-    ps.sort_stats('time')
-    print_stats_with_precision(ps, limit=20, decimals=4)
-
 
 if __name__ == "__main__":
-    print("\nStarting profiling analysis...")
-    print("This will show WHERE time is actually spent in the algorithms.\n")
+
 
     profile_function_selection(iterations=5)
     profile_test_mapping(iterations=5)
@@ -124,9 +108,3 @@ if __name__ == "__main__":
     print("\n" + "="*80)
     print("PROFILING COMPLETE")
     print("="*80)
-    print("\nInterpretation guide:")
-    print("  - 'ncalls': Number of function calls")
-    print("  - 'tottime': Total time in THIS function (excluding subfunctions)")
-    print("  - 'cumtime': Total time in this function and all subfunctions")
-    print("\nLook for functions with HIGH cumtime but LOW tottime - those call expensive subfunctions.")
-    print("Look for functions with HIGH tottime - those are the actual bottlenecks.")

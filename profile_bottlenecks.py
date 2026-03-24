@@ -12,6 +12,23 @@ from loader import TrainingLoader, IdealLoader, TestLoader
 from function_searcher import FunctionSearcher
 from mapping_test import Mapping
 
+USE_WARMUP = False
+
+
+def print_stats_with_precision(ps, limit=20, decimals=6):
+    """Print pstats with custom decimal precision."""
+    print(f"{'ncalls':<10} {'tottime':<12} {'percall':<12} {'cumtime':<12} {'percall':<12} {'filename:lineno(function)':<50}")
+    print("-" * 120)
+    
+    for func, stats in sorted(ps.stats.items(), key=lambda x: x[1][3], reverse=True)[:limit]:
+        ncalls = stats[0]
+        tottime = stats[2]
+        cumtime = stats[3]
+        percall_tot = tottime / ncalls if ncalls > 0 else 0
+        percall_cum = cumtime / ncalls if ncalls > 0 else 0
+        
+        print(f"{ncalls:<10} {tottime:<12.{decimals}f} {percall_tot:<12.{decimals}f} {cumtime:<12.{decimals}f} {percall_cum:<12.{decimals}f} {str(func):<50}")
+
 
 def profile_function_selection(iterations: int = 5):
     """Profile FunctionSearcher.select_ideal_functions()"""
@@ -22,6 +39,13 @@ def profile_function_selection(iterations: int = 5):
     print("\n" + "="*80)
     print("PROFILING: function_searcher.select_ideal_functions()")
     print("="*80 + "\n")
+
+    # Warm-up cycle to exclude compilation time
+    if USE_WARMUP:
+        print("Running warm-up cycle...")
+        searcher = FunctionSearcher()
+        searcher.select_ideal_functions(training_df, ideal_df)
+        print("Warm-up complete. Starting actual profiling...\n")
 
     pr = cProfile.Profile()
     pr.enable()
@@ -35,14 +59,7 @@ def profile_function_selection(iterations: int = 5):
     # Print top 20 functions by cumulative time
     ps = pstats.Stats(pr)
     ps.sort_stats('cumulative')
-    ps.print_stats(20)
-
-    # Also show by total time
-    print("\n" + "="*80)
-    print("Top functions by TOTAL TIME (not cumulative):")
-    print("="*80 + "\n")
-    ps.sort_stats('time')
-    ps.print_stats(15)
+    print_stats_with_precision(ps, limit=20, decimals=4)
 
 
 def profile_test_mapping(iterations: int = 5):
@@ -60,6 +77,13 @@ def profile_test_mapping(iterations: int = 5):
     print("PROFILING: Mapping.map_test_points()")
     print("="*80 + "\n")
 
+    # Warm-up cycle to exclude compilation time
+    if USE_WARMUP:
+        print("Running warm-up cycle...")
+        evaluator = Mapping(ideal_df, selections)
+        evaluator.map_test_points(test_df)
+        print("Warm-up complete. Starting actual profiling...\n")
+
     pr = cProfile.Profile()
     pr.enable()
 
@@ -72,19 +96,11 @@ def profile_test_mapping(iterations: int = 5):
     # Print top 25 functions by cumulative time
     ps = pstats.Stats(pr)
     ps.sort_stats('cumulative')
-    ps.print_stats(25)
-
-    # Also show by total time
-    print("\n" + "="*80)
-    print("Top functions by TOTAL TIME (not cumulative):")
-    print("="*80 + "\n")
-    ps.sort_stats('time')
-    ps.print_stats(20)
+    print_stats_with_precision(ps, limit=25, decimals=4)
 
 
 if __name__ == "__main__":
-    print("\nStarting profiling analysis...")
-    print("This will show WHERE time is actually spent in the algorithms.\n")
+
 
     profile_function_selection(iterations=5)
     profile_test_mapping(iterations=5)
@@ -92,9 +108,3 @@ if __name__ == "__main__":
     print("\n" + "="*80)
     print("PROFILING COMPLETE")
     print("="*80)
-    print("\nInterpretation guide:")
-    print("  - 'ncalls': Number of function calls")
-    print("  - 'tottime': Total time in THIS function (excluding subfunctions)")
-    print("  - 'cumtime': Total time in this function and all subfunctions")
-    print("\nLook for functions with HIGH cumtime but LOW tottime - those call expensive subfunctions.")
-    print("Look for functions with HIGH tottime - those are the actual bottlenecks.")
